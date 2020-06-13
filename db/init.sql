@@ -12,6 +12,28 @@ CREATE TABLE IF NOT EXISTS Items(
     INDEX(name)
 ) ENGINE INNODB;
 
+CREATE TABLE IF NOT EXISTS ItemPriceLog(
+    change_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    item_id INT UNSIGNED NOT NULL,
+    price DOUBLE(7,2) UNSIGNED NOT NULL,
+    FOREIGN KEY(item_id) REFERENCES Items(id),
+    INDEX(change_timestamp)
+) ENGINE INNODB COMMENT 'Item price history log table';
+
+CREATE DEFINER=`jflopezfernandez`@`localhost` TRIGGER item_price_init
+    AFTER INSERT ON Items
+        FOR EACH ROW
+            INSERT INTO ItemPriceLog(item_id, price)
+            VALUES
+                (NEW.id, NEW.price);
+
+CREATE DEFINER=`jflopezfernandez`@`localhost` TRIGGER item_price_change
+    BEFORE UPDATE ON Items
+        FOR EACH ROW
+            INSERT INTO ItemPriceLog(item_id, price)
+            VALUES
+                (OLD.id, NEW.price);
+
 INSERT INTO Items(name, price)
 VALUES
 	("Milk 2% - Publix", 3.82),
@@ -46,3 +68,18 @@ VALUES
 
 -- Select all items in the test shopping list.
 SELECT Items.name AS 'Item', Items.price AS 'Unit Price', GroceryListItems.quantity AS 'Quantity' FROM GroceryListItems INNER JOIN Items WHERE GroceryListItems.list_id=@TEST_LIST AND GroceryListItems.item_id=Items.id;
+
+-- Verify the changes went through.
+SELECT * FROM Items;
+
+-- Test the item price history log table.
+UPDATE LOW_PRIORITY Items
+	SET price=6.99
+    WHERE id=2;
+
+SELECT * FROM Items;
+
+SELECT * FROM ItemPriceLog;
+
+-- Get a single item's price history.
+SELECT change_timestamp AS 'Last Change', price AS 'Price' FROM ItemPriceLog WHERE item_id=2;
