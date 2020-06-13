@@ -8,13 +8,14 @@ USE GroceryList;
 CREATE TABLE IF NOT EXISTS Items(
     id INT UNSIGNED AUTO_INCREMENT NOT NULL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
+    price DOUBLE(7,2) UNSIGNED NOT NULL DEFAULT 0.0,
     INDEX(name)
 ) ENGINE INNODB;
 
-INSERT INTO Items(name)
+INSERT INTO Items(name, price)
 VALUES
-	("Milk 2% - Publix"),
-    ("Ground Beef - 1lb");
+	("Milk 2% - Publix", 3.82),
+    ("Ground Beef - 1lb", 7.99);
 
 CREATE TABLE IF NOT EXISTS GroceryLists(
     id INT UNSIGNED AUTO_INCREMENT NOT NULL PRIMARY KEY,
@@ -44,4 +45,4 @@ VALUES
     (@TEST_LIST, 2);
 
 -- Select all items in the test shopping list.
-SELECT Items.name, GroceryListItems.quantity FROM GroceryListItems INNER JOIN Items WHERE GroceryListItems.list_id=@TEST_LIST AND GroceryListItems.item_id=Items.id;
+SELECT Items.name AS 'Item', Items.price AS 'Unit Price', GroceryListItems.quantity AS 'Quantity' FROM GroceryListItems INNER JOIN Items WHERE GroceryListItems.list_id=@TEST_LIST AND GroceryListItems.item_id=Items.id;
