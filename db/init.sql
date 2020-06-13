@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS Items(
 
 INSERT INTO Items(name)
 VALUES
-	("Milk 2% - Publix");
+	("Milk 2% - Publix"),
+    ("Ground Beef - 1lb");
 
 CREATE TABLE IF NOT EXISTS GroceryLists(
     id INT UNSIGNED AUTO_INCREMENT NOT NULL PRIMARY KEY,
@@ -27,5 +28,17 @@ CREATE TABLE IF NOT EXISTS GroceryListItems(
     FOREIGN KEY(list_id) REFERENCES GroceryLists(id),
     FOREIGN KEY(list_id) REFERENCES Items(id)
 ) ENGINE INNODB;
-    
-SELECT LAST_INSERT_ID();
+
+INSERT INTO GroceryLists(list_date)
+VALUES
+    (NOW());
+
+SELECT @TEST_LIST := LAST_INSERT_ID();
+
+INSERT INTO GroceryListItems(list_id, item_id)
+VALUES
+    (@TEST_LIST, 1),
+    (@TEST_LIST, 2);
+
+-- Select all items in the test shopping list.
+SELECT Items.name, GroceryListItems.quantity FROM GroceryListItems INNER JOIN Items WHERE GroceryListItems.list_id=@TEST_LIST AND GroceryListItems.item_id=Items.id;
