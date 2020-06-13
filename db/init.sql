@@ -33,8 +33,11 @@ INSERT INTO GroceryLists(list_date)
 VALUES
     (NOW());
 
+-- Create a test shopping list to verify everything is working as it's supposed
+-- to during development.
 SELECT @TEST_LIST := LAST_INSERT_ID();
 
+-- Populate the test list.
 INSERT INTO GroceryListItems(list_id, item_id)
 VALUES
     (@TEST_LIST, 1),
